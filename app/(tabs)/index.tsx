@@ -1,98 +1,54 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import React from 'react';
+import { SafeAreaView, ScrollView, Text, View, TouchableOpacity, StatusBar } from 'react-native';
+import { router } from 'expo-router';
+import { User, Ticket } from 'lucide-react-native';
+import { COLORS } from '../../constants/theme';
+import { Card } from '../../components/Card';
+import { Badge } from '../../components/Badge';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const meals = [
+    { id: '1', title: 'Sarapan', sub: 'Breakfast', time: '06:30 - 10:00', status: 'available' as const },
+    { id: '2', title: 'Makan Siang', sub: 'Lunch', time: '11:30 - 14:00', status: 'available' as const },
+    { id: '3', title: 'Makan Malam', sub: 'Dinner', time: '17:00 - 20:00', status: 'used' as const },
+  ];
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.cream }}>
+      <StatusBar barStyle="dark-content" />
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.brown, marginRight: 10 }} />
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: COLORS.brown }}>CampusDine</Text>
+        </View>
+        <TouchableOpacity onPress={() => router.push('/auth/login')}>
+          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E0E0E0', justifyContent: 'center', alignItems: 'center' }}>
+            <User size={20} color={COLORS.brown} />
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
+        {meals.map((meal) => (
+          <Card key={meal.id} style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 }}>
+            <View>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', color: COLORS.brown }}>{meal.title}</Text>
+              <Text style={{ fontSize: 16, color: COLORS.brownLight }}>{meal.sub}</Text>
+              <Text style={{ fontSize: 14, color: COLORS.gray }}>{meal.time}</Text>
+            </View>
+            <View style={{ alignItems: 'flex-end' }}>
+              <Badge status={meal.status} />
+              <TouchableOpacity 
+                disabled={meal.status === 'used'}
+                onPress={() => router.push(`/ticket/${meal.id}`)}
+                style={{ marginTop: 10 }}
+              >
+                <Ticket size={24} color={meal.status === 'available' ? COLORS.brown : COLORS.gray} />
+              </TouchableOpacity>
+            </View>
+          </Card>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
