@@ -1,184 +1,368 @@
-import React, { useState } from 'react';
+﻿import { useQuery } from "convex/react";
+import { Clock, Utensils } from "lucide-react-native";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
-  Text,
-  View,
-  TouchableOpacity,
   StatusBar,
-} from 'react-native';
-import { COLORS } from '../../constants/theme';
-import { Card } from '../../components/Card';
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { COLORS } from "../../constants/theme";
+import { api } from "../../convex/_generated/api";
 
-type MealPeriod = 'breakfast' | 'lunch' | 'dinner';
+type MealPeriod = "pagi" | "siang" | "sore";
+type DayKey =
+  | "senin"
+  | "selasa"
+  | "rabu"
+  | "kamis"
+  | "jumat"
+  | "sabtu"
+  | "minggu";
+
+const DAYS: { key: DayKey; label: string; short: string; num: number }[] = [
+  { key: "senin", label: "Senin", short: "Sen", num: 10 },
+  { key: "selasa", label: "Selasa", short: "Sel", num: 11 },
+  { key: "rabu", label: "Rabu", short: "Rab", num: 12 },
+  { key: "kamis", label: "Kamis", short: "Kam", num: 13 },
+  { key: "jumat", label: "Jumat", short: "Jum", num: 14 },
+  { key: "sabtu", label: "Sabtu", short: "Sab", num: 15 },
+  { key: "minggu", label: "Minggu", short: "Min", num: 16 },
+];
+
+const PERIODS: {
+  key: MealPeriod;
+  label: string;
+  time: string;
+}[] = [
+  { key: "pagi", label: "Sarapan", time: "06:30 - 10:00" },
+  { key: "siang", label: "Makan Siang", time: "11:30 - 14:00" },
+  { key: "sore", label: "Makan Malam", time: "17:00 - 20:00" },
+];
 
 export default function MenuScreen() {
-  const [selectedPeriod, setSelectedPeriod] = useState<MealPeriod>('lunch');
+  const [selectedDay, setSelectedDay] = useState<DayKey>(() => {
+    const jsDay = new Date().getDay();
+    const dayMap: DayKey[] = [
+      "minggu",
+      "senin",
+      "selasa",
+      "rabu",
+      "kamis",
+      "jumat",
+      "sabtu",
+    ];
+    return dayMap[jsDay];
+  });
+  const [selectedPeriod, setSelectedPeriod] = useState<MealPeriod>(() => {
+    const h = new Date().getHours();
+    if (h < 10) return "pagi";
+    if (h < 15) return "siang";
+    return "sore";
+  });
 
-  const menuData = {
-    breakfast: [
-      { id: '1', name: 'Nasi Uduk', desc: 'Dengan ayam goreng & sambal', tag: 'halal', icon: '🍚', calories: '350 kcal' },
-      { id: '2', name: 'Bubur Ayam', desc: 'Bubur hangat dengan suwiran ayam', tag: 'halal', icon: '🥣', calories: '280 kcal' },
-      { id: '3', name: 'Roti Bakar', desc: 'Roti bakar coklat keju', tag: 'vegetarian', icon: '🍞', calories: '320 kcal' },
-    ],
-    lunch: [
-      { id: '4', name: 'Nasi Goreng Kampung', desc: 'Dengan telur mata sapi & acar', tag: 'halal', icon: '🍚', calories: '520 kcal' },
-      { id: '5', name: 'Ayam Bakar Bumbu Rujak', desc: 'Pedas manis gurih', tag: 'pedas', icon: '🍗', calories: '480 kcal' },
-      { id: '6', name: 'Sayur Asem', desc: 'Segar dengan jagung manis', tag: 'vegan', icon: '🥗', calories: '180 kcal' },
-      { id: '7', name: 'Ikan Bakar', desc: 'Ikan nila bakar sambal dabu-dabu', tag: 'halal', icon: '🐟', calories: '420 kcal' },
-    ],
-    dinner: [
-      { id: '8', name: 'Mie Goreng', desc: 'Mie goreng dengan sayuran & telur', tag: 'halal', icon: '🍜', calories: '450 kcal' },
-      { id: '9', name: 'Nasi Campur', desc: 'Nasi dengan lauk pauk pilihan', tag: 'halal', icon: '🍛', calories: '550 kcal' },
-      { id: '10', name: 'Cap Cay', desc: 'Tumis sayuran dengan bakso', tag: 'halal', icon: '🥘', calories: '320 kcal' },
-    ],
-  };
+  const menuItems =
+    useQuery(api.menuItems.listByDayPeriod, {
+      day: selectedDay,
+      period: selectedPeriod,
+    }) ?? [];
 
-  const periods = [
-    { id: 'breakfast' as MealPeriod, label: 'Sarapan', time: '06:30-10:00' },
-    { id: 'lunch' as MealPeriod, label: 'Makan Siang', time: '11:30-14:00' },
-    { id: 'dinner' as MealPeriod, label: 'Makan Malam', time: '17:00-20:00' },
-  ];
-
-  const getTagColor = (tag: string) => {
-    switch (tag) {
-      case 'halal':
-        return { bg: '#E8F5E9', text: COLORS.green };
-      case 'vegetarian':
-        return { bg: '#FFF3E0', text: '#F57C00' };
-      case 'vegan':
-        return { bg: '#E8F5E9', text: '#43A047' };
-      case 'pedas':
-        return { bg: '#FFEBEE', text: '#E53935' };
-      default:
-        return { bg: '#F5F5F5', text: COLORS.gray };
-    }
-  };
-
-  const currentMenu = menuData[selectedPeriod];
+  const selectedPeriodInfo = PERIODS.find((p) => p.key === selectedPeriod)!;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.cream }}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.cream} />
-      
+
       {/* Header */}
-      <View style={{ padding: 20, paddingTop: 10 }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: COLORS.brown, marginBottom: 16 }}>
-          Menu Hari Ini
-        </Text>
-        
-        {/* Period Tabs */}
-        <ScrollView 
-          horizontal 
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.headerTitle}>Menu Kafetaria</Text>
+          <Text style={styles.headerSub}>Jadwal makan mingguan asrama</Text>
+        </View>
+        <View style={styles.headerIcon}>
+          <Utensils size={20} color={COLORS.brownLight} />
+        </View>
+      </View>
+
+      {/* Day Selector */}
+      <View style={styles.daySelectorWrap}>
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 10 }}
+          contentContainerStyle={styles.dayScrollContent}
         >
-          {periods.map((period) => (
-            <TouchableOpacity
-              key={period.id}
-              onPress={() => setSelectedPeriod(period.id)}
-              style={{
-                paddingHorizontal: 20,
-                paddingVertical: 12,
-                borderRadius: 25,
-                backgroundColor: selectedPeriod === period.id 
-                  ? `${COLORS.green}20` 
-                  : COLORS.white,
-                borderWidth: 1,
-                borderColor: selectedPeriod === period.id 
-                  ? COLORS.green 
-                  : '#E0E0E0',
-                minWidth: 120,
-                alignItems: 'center',
-              }}
-            >
-              <Text style={{
-                fontSize: 14,
-                fontWeight: selectedPeriod === period.id ? 'bold' : '600',
-                color: selectedPeriod === period.id ? COLORS.green : COLORS.brownLight,
-                textAlign: 'center',
-              }}>
-                {period.label}
-              </Text>
-              <Text style={{
-                fontSize: 11,
-                color: selectedPeriod === period.id ? COLORS.green : COLORS.gray,
-                marginTop: 2,
-              }}>
-                {period.time}
-              </Text>
-            </TouchableOpacity>
-          ))}
+          {DAYS.map((day) => {
+            const isActive = selectedDay === day.key;
+            return (
+              <TouchableOpacity
+                key={day.key}
+                onPress={() => setSelectedDay(day.key)}
+                style={[styles.dayItem, isActive && styles.dayItemActive]}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[styles.dayShort, isActive && styles.dayShortActive]}
+                >
+                  {day.short}
+                </Text>
+                <Text style={[styles.dayNum, isActive && styles.dayNumActive]}>
+                  {day.num}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
+      {/* Period Tabs */}
+      <View style={styles.periodContainer}>
+        {PERIODS.map((period) => {
+          const isActive = selectedPeriod === period.key;
+          return (
+            <TouchableOpacity
+              key={period.key}
+              onPress={() => setSelectedPeriod(period.key)}
+              style={[styles.periodTab, isActive && styles.periodTabActive]}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[
+                  styles.periodLabel,
+                  isActive && styles.periodLabelActive,
+                ]}
+              >
+                {period.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* Time Info */}
+      <View style={styles.timeBar}>
+        <View style={styles.timeInfo}>
+          <Clock size={13} color={COLORS.gray} />
+          <Text style={styles.timeText}>{selectedPeriodInfo.time}</Text>
+        </View>
+        <Text style={styles.menuCountText}>
+          {menuItems.length} menu tersedia
+        </Text>
+      </View>
+
       {/* Menu Items */}
-      <ScrollView 
-        contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+      <ScrollView
+        contentContainerStyle={styles.menuList}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-          {currentMenu.map((item, index) => {
-            const tagStyle = getTagColor(item.tag);
-            return (
-              <Card 
-                key={item.id}
-                style={{
-                  width: '48%',
-                  marginBottom: 15,
-                  padding: 16,
-                }}
-              >
-                <View style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: 8,
-                  backgroundColor: tagStyle.bg,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  marginBottom: 12,
-                }}>
-                  <Text style={{ fontSize: 28 }}>{item.icon}</Text>
-                </View>
-                <Text style={{
-                  fontSize: 14,
-                  fontWeight: 'bold',
-                  color: COLORS.brown,
-                  marginBottom: 4,
-                }}>
-                  {item.name}
-                </Text>
-                <Text style={{
-                  fontSize: 12,
-                  color: COLORS.gray,
-                  marginBottom: 8,
-                }}>
-                  {item.desc}
-                </Text>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <View style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    backgroundColor: tagStyle.bg,
-                    borderRadius: 4,
-                  }}>
-                    <Text style={{
-                      fontSize: 11,
-                      color: tagStyle.text,
-                      fontWeight: 'bold',
-                    }}>
-                      {item.tag.toUpperCase()}
-                    </Text>
-                  </View>
-                  <Text style={{ fontSize: 11, color: COLORS.gray }}>
-                    {item.calories}
-                  </Text>
-                </View>
-              </Card>
-            );
-          })}
-        </View>
+        {menuItems.map((item, index) => (
+          <View key={index} style={styles.menuCard}>
+            <View style={styles.menuNumber}>
+              <Text style={styles.menuNumberText}>{index + 1}</Text>
+            </View>
+
+            <View style={styles.menuCardBody}>
+              <View style={styles.menuEmojiWrap}>
+                <Text style={styles.menuEmoji}>{item.icon}</Text>
+              </View>
+              <View style={styles.menuInfo}>
+                <Text style={styles.menuName}>{item.name}</Text>
+                <Text style={styles.menuDesc}>{item.desc}</Text>
+              </View>
+            </View>
+          </View>
+        ))}
+        <View style={{ height: 90 }} />
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: COLORS.cream },
+
+  // Header
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: COLORS.brown,
+    letterSpacing: -0.3,
+  },
+  headerSub: {
+    fontSize: 13,
+    color: COLORS.gray,
+    marginTop: 3,
+  },
+  headerIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#F0EDE8",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  // Day Selector
+  daySelectorWrap: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  dayScrollContent: {
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+  dayItem: {
+    alignItems: "center",
+    justifyContent: "center",
+    width: 52,
+    height: 68,
+    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: "#EDEDED",
+  },
+  dayItemActive: {
+    backgroundColor: COLORS.brown,
+    borderColor: COLORS.brown,
+  },
+  dayShort: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: COLORS.gray,
+    marginBottom: 4,
+  },
+  dayShortActive: { color: "rgba(255,255,255,0.6)" },
+  dayNum: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: COLORS.brown,
+  },
+  dayNumActive: { color: COLORS.white },
+
+  // Period Tabs
+  periodContainer: {
+    flexDirection: "row",
+    marginHorizontal: 24,
+    backgroundColor: "#F0EDE8",
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 12,
+  },
+  periodTab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    borderRadius: 11,
+    gap: 6,
+  },
+  periodTabActive: {
+    backgroundColor: COLORS.white,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  periodIcon: { fontSize: 14 },
+  periodLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLORS.gray,
+  },
+  periodLabelActive: {
+    color: COLORS.brown,
+    fontWeight: "700",
+  },
+
+  // Time Bar
+  timeBar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    marginBottom: 14,
+  },
+  timeInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  timeText: {
+    fontSize: 12,
+    color: COLORS.gray,
+    fontWeight: "500",
+  },
+  menuCountText: {
+    fontSize: 12,
+    color: COLORS.brownLight,
+    fontWeight: "600",
+  },
+
+  // Menu Items
+  menuList: {
+    paddingHorizontal: 24,
+  },
+  menuCard: {
+    flexDirection: "row",
+    marginBottom: 12,
+  },
+  menuNumber: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: COLORS.brown,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    marginTop: 14,
+  },
+  menuNumberText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: COLORS.white,
+  },
+  menuCardBody: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#F0EDE8",
+  },
+  menuEmojiWrap: {
+    width: 50,
+    height: 50,
+    borderRadius: 14,
+    backgroundColor: "#FAF5EF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  menuEmoji: { fontSize: 26 },
+  menuInfo: { flex: 1 },
+  menuName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.brown,
+    marginBottom: 3,
+  },
+  menuDesc: {
+    fontSize: 12,
+    color: COLORS.gray,
+    lineHeight: 17,
+  },
+});

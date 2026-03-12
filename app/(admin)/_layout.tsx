@@ -1,9 +1,15 @@
 import { Tabs } from "expo-router";
-import { Home, QrCode, UserCircle, UtensilsCrossed } from "lucide-react-native";
+import {
+    ClipboardList,
+    Home,
+    QrCode,
+    UserCog,
+    UtensilsCrossed,
+} from "lucide-react-native";
 import React from "react";
 import { COLORS } from "../../constants/theme";
 
-export default function TabLayout() {
+export default function AdminTabLayout() {
   return (
     <Tabs
       screenOptions={{
@@ -23,7 +29,7 @@ export default function TabLayout() {
           elevation: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: "600",
         },
       }}
@@ -31,12 +37,28 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Beranda",
+          title: "Dashboard",
           tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="menu"
+        name="users"
+        options={{
+          title: "Mahasiswa",
+          tabBarIcon: ({ color, size }) => (
+            <UserCog size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="generate-qr"
+        options={{
+          title: "QR Code",
+          tabBarIcon: ({ color, size }) => <QrCode size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="menu-manage"
         options={{
           title: "Menu",
           tabBarIcon: ({ color, size }) => (
@@ -45,25 +67,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="qrcode"
+        name="records"
         options={{
-          title: "Scan QR",
-          tabBarIcon: ({ color, size }) => <QrCode size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profil",
+          title: "Rekap",
           tabBarIcon: ({ color, size }) => (
-            <UserCircle size={size} color={color} />
+            <ClipboardList size={size} color={color} />
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="guest"
-        options={{
-          href: null,
         }}
       />
     </Tabs>
