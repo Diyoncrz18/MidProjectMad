@@ -1,3 +1,29 @@
+// --- Penjelasan koneksi ke database Convex ---
+// 1. Deploy Convex dan dapatkan URL project
+//    - Jalankan: npx convex dev
+//    - Dapatkan URL project dari dashboard Convex
+// 2. Install package Convex di project React Native/Expo
+//    - Jalankan: npm install convex react convex/react
+// 3. Konfigurasi client Convex di file utama (misal App.tsx)
+//    - Import dan buat client:
+//      import { ConvexProvider, ConvexReactClient } from "convex/react";
+//      const convex = new ConvexReactClient("https://your-project.convex.cloud");
+//    - Bungkus aplikasi dengan provider:
+//      <ConvexProvider client={convex}>
+//        ...komponen aplikasi...
+//      </ConvexProvider>
+// 4. Gunakan useMutation dan useQuery untuk akses data
+//    - Import API Convex dan hooks:
+//      import { useMutation, useQuery } from "convex/react";
+//      import { api } from "../convex/_generated/api";
+//    - Contoh query dan mutation:
+//      const students = useQuery(api.students.list);
+//      const addStudent = useMutation(api.students.add);
+// 5. Pastikan fungsi dan schema sudah dibuat di folder convex/
+//    - Buat file seperti students.ts berisi mutation/query sesuai kebutuhan
+// Dengan langkah di atas, aplikasi bisa membaca dan menulis data ke database Convex secara real-time.
+// --- Akhir penjelasan ---
+
 import { useMutation, useQuery } from "convex/react";
 import { Edit3, Search, Trash2, UserPlus, Users } from "lucide-react-native";
 import React, { useState } from "react";
