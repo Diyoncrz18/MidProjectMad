@@ -100,22 +100,23 @@ export const seedAdmin = mutation({
   },
 });
 
-// Seed demo accounts: admin/admin123 and 12345678/user123
+// Seed demo accounts: 12345678/admin123 (admin) and 12345678/user123 (mahasiswa)
 export const seedDemoAccounts = mutation({
   args: {},
   handler: async (ctx) => {
     const results: string[] = [];
 
-    // Admin account (NIM: admin, password: admin123)
+    // Admin account (NIM: 12345678, password: admin123)
     const existingAdmin = await ctx.db
       .query("users")
-      .withIndex("by_nim", (q) => q.eq("nim", "admin"))
+      .withIndex("by_nim", (q) => q.eq("nim", "12345678"))
+      .filter((q) => q.eq(q.field("role"), "admin"))
       .first();
 
     if (!existingAdmin) {
       await ctx.db.insert("users", {
         name: "Administrator",
-        nim: "admin",
+        nim: "12345678",
         password: "admin123",
         role: "admin",
         email: "admin@gmail.com",
@@ -130,6 +131,7 @@ export const seedDemoAccounts = mutation({
     const existingUser = await ctx.db
       .query("users")
       .withIndex("by_nim", (q) => q.eq("nim", "12345678"))
+      .filter((q) => q.eq(q.field("role"), "mahasiswa"))
       .first();
 
     if (!existingUser) {
@@ -153,5 +155,22 @@ export const seedDemoAccounts = mutation({
     }
 
     return { results };
+  },
+});
+
+// Migrate: change admin NIM from "admin" to "12345678"
+export const migrateAdminNim = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const oldAdmin = await ctx.db
+      .query("users")
+      .withIndex("by_nim", (q) => q.eq("nim", "admin"))
+      .first();
+
+    if (oldAdmin) {
+      await ctx.db.patch(oldAdmin._id, { nim: "12345678" });
+      return { message: "Admin NIM updated to 12345678" };
+    }
+    return { message: "Old admin account not found, nothing to migrate" };
   },
 });

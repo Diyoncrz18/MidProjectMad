@@ -2,16 +2,16 @@ import { useMutation, useQuery } from "convex/react";
 import { Edit3, Search, Trash2, UserPlus, Users } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-    Alert,
-    FlatList,
-    Modal,
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  Modal,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { COLORS } from "../../constants/theme";
 import { api } from "../../convex/_generated/api";
@@ -257,7 +257,7 @@ export default function UsersScreen() {
             <Text style={styles.modalLabel}>Asrama</Text>
             <TextInput
               style={styles.modalInput}
-              placeholder="Contoh: Blok A"
+              placeholder="Contoh: Crystal II"
               placeholderTextColor={COLORS.gray}
               value={newAsrama}
               onChangeText={setNewAsrama}
