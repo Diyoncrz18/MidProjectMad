@@ -4,8 +4,11 @@ import React, { useState } from "react";
 import {
   Alert,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -32,6 +35,8 @@ export default function UsersScreen() {
   const [newNim, setNewNim] = useState("");
   const [newAsrama, setNewAsrama] = useState("");
   const [newKamar, setNewKamar] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
 
   const filtered = students.filter((s) => {
     const matchesSearch =
@@ -51,6 +56,7 @@ export default function UsersScreen() {
       nim: newNim,
       asrama: newAsrama,
       kamar: newKamar,
+      password: newPassword || newNim, // default password = NIM jika kosong
     });
     if (!result.success) {
       Alert.alert("Gagal", result.error || "Gagal menambahkan");
@@ -60,6 +66,7 @@ export default function UsersScreen() {
     setNewNim("");
     setNewAsrama("");
     setNewKamar("");
+    setNewPassword("");
     setShowAddModal(false);
   };
 
@@ -231,65 +238,100 @@ export default function UsersScreen() {
 
       {/* Add Modal */}
       <Modal visible={showAddModal} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Tambah Mahasiswa</Text>
-
-            <Text style={styles.modalLabel}>Nama Lengkap</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Masukkan nama"
-              placeholderTextColor={COLORS.gray}
-              value={newName}
-              onChangeText={setNewName}
-            />
-
-            <Text style={styles.modalLabel}>NIM</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Masukkan NIM"
-              placeholderTextColor={COLORS.gray}
-              value={newNim}
-              onChangeText={setNewNim}
-              keyboardType="numeric"
-            />
-
-            <Text style={styles.modalLabel}>Asrama</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Contoh: Crystal II"
-              placeholderTextColor={COLORS.gray}
-              value={newAsrama}
-              onChangeText={setNewAsrama}
-            />
-
-            <Text style={styles.modalLabel}>Kamar</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Contoh: A-204"
-              placeholderTextColor={COLORS.gray}
-              value={newKamar}
-              onChangeText={setNewKamar}
-            />
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.modalCancelBtn}
-                onPress={() => setShowAddModal(false)}
-                activeOpacity={0.7}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
               >
-                <Text style={styles.modalCancelText}>Batal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.modalSaveBtn}
-                onPress={handleAdd}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.modalSaveText}>Simpan</Text>
-              </TouchableOpacity>
+                <Text style={styles.modalTitle}>Tambah Mahasiswa</Text>
+
+                <Text style={styles.modalLabel}>Nama Lengkap</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Masukkan nama"
+                  placeholderTextColor={COLORS.gray}
+                  value={newName}
+                  onChangeText={setNewName}
+                />
+
+                <Text style={styles.modalLabel}>NIM</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Masukkan NIM"
+                  placeholderTextColor={COLORS.gray}
+                  value={newNim}
+                  onChangeText={setNewNim}
+                  keyboardType="numeric"
+                />
+
+                <Text style={styles.modalLabel}>Asrama</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Contoh: Crystal II"
+                  placeholderTextColor={COLORS.gray}
+                  value={newAsrama}
+                  onChangeText={setNewAsrama}
+                />
+
+                <Text style={styles.modalLabel}>Kamar</Text>
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Contoh: A-204"
+                  placeholderTextColor={COLORS.gray}
+                  value={newKamar}
+                  onChangeText={setNewKamar}
+                />
+
+                <Text style={styles.modalLabel}>
+                  Password{" "}
+                  <Text style={{ color: COLORS.gray, fontWeight: "400" }}>
+                    (kosong = gunakan NIM)
+                  </Text>
+                </Text>
+                <View style={styles.passwordWrap}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="Masukkan password"
+                    placeholderTextColor={COLORS.gray}
+                    value={newPassword}
+                    onChangeText={setNewPassword}
+                    secureTextEntry={!showNewPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowNewPassword((v) => !v)}
+                    style={styles.eyeBtn}
+                  >
+                    <Text style={styles.eyeText}>
+                      {showNewPassword ? "🙈" : "👁️"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={styles.modalCancelBtn}
+                    onPress={() => setShowAddModal(false)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.modalCancelText}>Batal</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.modalSaveBtn}
+                    onPress={handleAdd}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.modalSaveText}>Simpan</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
             </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -516,4 +558,30 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.brown,
   },
   modalSaveText: { fontSize: 14, fontWeight: "700", color: COLORS.white },
+
+  // Password field
+  passwordWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FAF7F4",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#EDEBE8",
+    marginBottom: 14,
+  },
+  passwordInput: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.brown,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    height: 48,
+  },
+  eyeBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+  },
+  eyeText: {
+    fontSize: 16,
+  },
 });

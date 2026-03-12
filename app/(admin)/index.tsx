@@ -1,24 +1,27 @@
 import { useQuery } from "convex/react";
 import { router } from "expo-router";
 import {
-  ChevronRight,
-  ClipboardList,
-  QrCode,
-  ShieldCheck,
-  UserCog,
-  UtensilsCrossed,
+    ChevronRight,
+    ClipboardList,
+    LogOut,
+    QrCode,
+    ShieldCheck,
+    UserCog,
+    UtensilsCrossed,
 } from "lucide-react-native";
 import React from "react";
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { COLORS } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
 import { api } from "../../convex/_generated/api";
 
 const quickActions = [
@@ -53,8 +56,23 @@ const quickActions = [
 ];
 
 export default function AdminDashboard() {
+  const { user, logout } = useAuth();
   const today = new Date();
   const dateStr = `${today.getDate()}/${today.getMonth() + 1}/${today.getFullYear()}`;
+
+  const handleLogout = () => {
+    Alert.alert("Konfirmasi", "Apakah Anda yakin ingin keluar?", [
+      { text: "Batal", style: "cancel" },
+      {
+        text: "Keluar",
+        style: "destructive",
+        onPress: async () => {
+          await logout();
+          router.replace("/auth/login");
+        },
+      },
+    ]);
+  };
 
   const studentCount = useQuery(api.students.count) ?? 0;
   const activeQRCount = useQuery(api.qrCodes.countActive) ?? 0;
@@ -128,6 +146,13 @@ export default function AdminDashboard() {
         <View style={styles.adminBadge}>
           <ShieldCheck size={18} color={COLORS.white} />
         </View>
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={handleLogout}
+          activeOpacity={0.7}
+        >
+          <LogOut size={18} color="#E53935" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -232,6 +257,16 @@ export default function AdminDashboard() {
             </View>
           </View>
         </View>
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={styles.logoutFullBtn}
+          onPress={handleLogout}
+          activeOpacity={0.7}
+        >
+          <LogOut size={18} color="#E53935" />
+          <Text style={styles.logoutFullText}>Keluar dari Admin</Text>
+        </TouchableOpacity>
+
         <View style={{ height: 20 }} />
       </ScrollView>
     </SafeAreaView>
@@ -266,6 +301,34 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.brown,
     justifyContent: "center",
     alignItems: "center",
+    marginRight: 8,
+  },
+  logoutBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: "#FFF0F0",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#FFE0E0",
+  },
+  logoutFullBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#FFF0F0",
+    borderRadius: 14,
+    paddingVertical: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "#FFE0E0",
+  },
+  logoutFullText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#E53935",
   },
   scrollContent: { paddingHorizontal: 24, paddingTop: 8 },
 
